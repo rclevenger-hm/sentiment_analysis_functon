@@ -1,0 +1,11 @@
+Azure Sentiment Analysis Service
+Copyright (c) 2026 Roger Clevenger
+
+Input validation, reporting, API routing and behavioral tests are adapted from
+Roger Clevenger's MIT-licensed sentiment_analysis_lambda repository:
+https://github.com/rclevenger-hm/sentiment_analysis_lambda
+Baseline: 4c6bd13 (full source SHA recorded in docs/PARITY.md).
+The original MIT license and copyright notice are retained in LICENSE.
+
+Cloud adapters, Entra authentication, Azure infrastructure, atomic checkpoints,
+Azure-specific tests and deployment workflows are implemented for this repository.
