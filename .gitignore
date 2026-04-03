@@ -1,0 +1,12 @@
+node_modules/
+dist/
+artifacts/
+coverage/
+local.settings.json
+.env
+.terraform/
+*.tfstate*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+.terraform.tfstate.lock.info
