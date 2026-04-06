@@ -1,0 +1,19 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage__accountName": "YOUR_HOST_STORAGE",
+    "AzureWebJobsStorage__credential": "managedidentity",
+    "WorkQueue__queueServiceUri": "https://YOUR_STORAGE.queue.core.windows.net",
+    "ENTRA_TENANT_ID": "YOUR_DIRECTORY_GUID",
+    "ENTRA_AUDIENCE": "YOUR_API_CLIENT_GUID",
+    "LANGUAGE_ENDPOINT": "https://YOUR_LANGUAGE.cognitiveservices.azure.com",
+    "COSMOS_ENDPOINT": "https://YOUR_COSMOS.documents.azure.com:443/",
+    "COSMOS_DATABASE": "sentiment",
+    "BLOB_ENDPOINT": "https://YOUR_STORAGE.blob.core.windows.net",
+    "QUEUE_ENDPOINT": "https://YOUR_STORAGE.queue.core.windows.net",
+    "DATA_CONTAINER": "feedback",
+    "DAILY_ANALYSIS_LIMIT": "1000",
+    "DATA_RETENTION_DAYS": "30"
+  }
+}
