@@ -133,3 +133,12 @@ function dateOnly(value) {
   }
   return value;
 }
+
+function tenantFrom(event) {
+  // Claims are injected only after cryptographic verification in the HTTP adapter.
+  const identity = event.requestContext?.identity;
+  if (typeof identity?.tid !== 'string' || typeof identity?.oid !== 'string' || !identity.tid || !identity.oid) {
+    throw new HttpError(401, 'UNAUTHENTICATED', 'An authenticated Entra principal is required');
+  }
+  return hash(`${identity.tid}:${identity.oid}`);
+}
