@@ -142,3 +142,5 @@ function tenantFrom(event) {
   }
   return hash(`${identity.tid}:${identity.oid}`);
 }
+
+module.exports = { MAX_REQUEST_BYTES, MAX_TEXT_BYTES, MAX_RECORDS, LANGUAGES, HttpError, invalid, hash, object, header, decodeBody, parseJson, validateText, parseCsv, parseBulk, dateOnly, tenantFrom };
