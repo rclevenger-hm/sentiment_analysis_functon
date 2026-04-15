@@ -22,3 +22,5 @@ function filtersFrom(query = {}) {
   }
   return filters;
 }
+
+function confidence(record) { return record.sentimentScore?.[record.sentiment?.[0] + record.sentiment?.slice(1).toLowerCase()] ?? 0; }
