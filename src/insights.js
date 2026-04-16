@@ -24,3 +24,13 @@ function filtersFrom(query = {}) {
 }
 
 function confidence(record) { return record.sentimentScore?.[record.sentiment?.[0] + record.sentiment?.slice(1).toLowerCase()] ?? 0; }
+function filterResults(records, filters = {}, fallbackDate) {
+  return records.filter((record) => {
+    for (const key of ['product', 'source', 'languageCode', 'sentiment']) if (filters[key] !== undefined && record[key] !== filters[key]) return false;
+    const date = record.date || fallbackDate;
+    if (filters.from && (!date || date < filters.from)) return false;
+    if (filters.to && (!date || date > filters.to)) return false;
+    if (filters.minConfidence !== undefined && confidence(record) < filters.minConfidence) return false;
+    return true;
+  });
+}
