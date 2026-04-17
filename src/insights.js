@@ -71,3 +71,14 @@ function compare(current, baseline) {
     negativeRateChange: current.negativeRate === null || baseline.negativeRate === null ? null : current.negativeRate - baseline.negativeRate,
     note: 'Rates use successfully analyzed records. Differences describe these samples; they do not establish statistical significance.' };
 }
+
+function csvExport(records) {
+  // Prefix spreadsheet formulas, including leading whitespace/control characters.
+  const cell = (value) => {
+    let text = value === undefined || value === null ? '' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+    if (/^[\s\u0000-\u001f]*[=+@-]/u.test(text) || /^[\t\r\n]/.test(text)) text = `'${text}`;
+    return `"${text.replace(/"/g, '""')}"`;
+  };
+  const columns = ['id', 'text', 'date', 'product', 'source', 'languageCode', 'sentiment', 'sentimentScore', 'entities', 'error', 'insightsError'];
+  return [columns.join(','), ...records.map((record) => columns.map((key) => cell(record[key])).join(','))].join('\r\n');
+}
