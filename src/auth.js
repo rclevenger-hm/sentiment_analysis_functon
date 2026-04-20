@@ -22,3 +22,4 @@ function createAuthenticator(config = process.env, verify) {
     return { tid: payload.tid, oid: payload.oid };
   };
 }
+module.exports = { createAuthenticator };
