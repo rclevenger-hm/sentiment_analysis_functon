@@ -22,3 +22,36 @@ function opinions(result, text) {
     assessments: (opinion.assessments || []).slice(0, 3).map((a) => ({ text: a.text.slice(0, 160), sentiment: a.sentiment.toUpperCase(), isNegated: a.isNegated })),
   }], truncated: (opinion.assessments || []).length > 3 })), entitiesTruncated: all.length > 10, offsetEncoding: 'Utf16CodeUnit' };
 }
+function createAnalyzer(client, config = process.env) {
+  client ||= new TextAnalyticsClient(config.LANGUAGE_ENDPOINT, new DefaultAzureCredential(), { retryOptions: { maxRetries: 2 }, allowInsecureConnection: false });
+  const options = (targeted) => ({ includeOpinionMining: targeted, stringIndexType: 'Utf16CodeUnit', disableServiceLogs: true, abortSignal: AbortSignal.timeout(25000) });
+  return {
+    async single(record, targeted = false) {
+      const response = await client.analyzeSentiment([{ id: 'single', text: record.text, language: language(record.languageCode) }], options(targeted));
+      const result = response[0];
+      if (!result || result.error) throw new Error('Analysis failed');
+      return { ...scores(result), modelVersion: response.modelVersion, ...(targeted ? opinions(result, record.text) : {}) };
+    },
+    async batch(records, targeted = false) {
+      const output = records.map((r) => ({ ...r }));
+      const indices = records.flatMap((r, i) => r.error ? [] : [i]);
+      // Azure synchronous sentiment accepts ten documents per request.
+      for (let offset = 0; offset < indices.length; offset += 10) {
+        const group = indices.slice(offset, offset + 10);
+        const input = group.map((i) => ({ id: String(i), text: records[i].text, language: language(records[i].languageCode) }));
+        // Request-level failures (including auth/configuration) must retry, not mark all rows invalid.
+        const response = await client.analyzeSentiment(input, options(targeted));
+        const results = new Map(response.map((r) => [r.id, r]));
+        for (const i of group) {
+          const value = results.get(String(i));
+          if (value?.error && transient(value.error)) throw Object.assign(new Error('Retryable document failure'), value.error);
+          try {
+            if (!value || value.error) output[i].error = safeError();
+            else Object.assign(output[i], scores(value), { modelVersion: response.modelVersion }, targeted ? opinions(value, records[i].text) : {});
+          } catch { output[i].error = safeError(); }
+        }
+      }
+      return output;
+    },
+  };
+}
