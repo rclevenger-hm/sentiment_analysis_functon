@@ -55,3 +55,4 @@ function createAnalyzer(client, config = process.env) {
     },
   };
 }
+module.exports = { createAnalyzer, transient, scores, opinions };
