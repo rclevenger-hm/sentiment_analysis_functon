@@ -54,6 +54,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
   const store = {
     expiry: () => now() + retention * 86400,
     async putObject(path, value) { const body = JSON.stringify(value); await bucket.getBlockBlobClient(path).upload(body, Buffer.byteLength(body), { blobHTTPHeaders: { blobContentType: 'application/json' } }); },
+    async getObject(path) { return JSON.parse((await bucket.getBlockBlobClient(path).downloadToBuffer()).toString('utf8')); },
   };
   return store;
 }
