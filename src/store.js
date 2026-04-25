@@ -55,6 +55,14 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
     expiry: () => now() + retention * 86400,
     async putObject(path, value) { const body = JSON.stringify(value); await bucket.getBlockBlobClient(path).upload(body, Buffer.byteLength(body), { blobHTTPHeaders: { blobContentType: 'application/json' } }); },
     async getObject(path) { return JSON.parse((await bucket.getBlockBlobClient(path).downloadToBuffer()).toString('utf8')); },
+    async exportFile(path, content, format) {
+      const blob = bucket.getBlockBlobClient(path);
+      await blob.upload(content, Buffer.byteLength(content), { blobHTTPHeaders: { blobContentType: format === 'csv' ? 'text/csv; charset=utf-8' : 'application/json', blobContentDisposition: `attachment; filename="sentiment-results.${format}"` } });
+      const startsOn = new Date(clock().getTime() - 60000), expiresOn = new Date(clock().getTime() + 60000);
+      const key = await blobs.getUserDelegationKey(startsOn, expiresOn);
+      const sas = generateBlobSASQueryParameters({ containerName: bucket.containerName, blobName: path, permissions: BlobSASPermissions.parse('r'), startsOn, expiresOn, protocol: SASProtocol.Https }, key, blobs.accountName).toString();
+      return `${blob.url}?${sas}`;
+    },
   };
   return store;
 }
