@@ -63,6 +63,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       const sas = generateBlobSASQueryParameters({ containerName: bucket.containerName, blobName: path, permissions: BlobSASPermissions.parse('r'), startsOn, expiresOn, protocol: SASProtocol.Https }, key, blobs.accountName).toString();
       return `${blob.url}?${sas}`;
     },
+    async get(tenant, key) { const value = await raw(tenant, key); return value && (!value.expiresAt || value.expiresAt > now()) ? value : null; },
   };
   return store;
 }
