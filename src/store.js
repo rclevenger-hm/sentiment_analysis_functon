@@ -64,6 +64,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       return `${blob.url}?${sas}`;
     },
     async get(tenant, key) { const value = await raw(tenant, key); return value && (!value.expiresAt || value.expiresAt > now()) ? value : null; },
+    async getJob(tenant, jobId) { const value = await store.get(tenant, `JOB#${jobId}`); if (!value) throw notFound(); return value; },
   };
   return store;
 }
