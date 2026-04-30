@@ -65,6 +65,16 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
     },
     async get(tenant, key) { const value = await raw(tenant, key); return value && (!value.expiresAt || value.expiresAt > now()) ? value : null; },
     async getJob(tenant, jobId) { const value = await store.get(tenant, `JOB#${jobId}`); if (!value) throw notFound(); return value; },
+    async reserveRequest(tenant) {
+      const key = `RATE#${clock().toISOString().slice(0, 16)}`;
+      const limit = rate;
+      return retry(async () => {
+        const old = await raw(tenant, key);
+        if ((old?.units || 0) >= limit) throw new HttpError(429, 'RATE_LIMIT_EXCEEDED', 'Request rate exceeded; retry in one minute');
+        const resourceBody = doc({ tenantId: tenant, key, units: (old?.units || 0) + 1, expiresAt: now() + 120 });
+        await batch(tenant, [old ? { operationType: 'Replace', id: old.id, resourceBody, ifMatch: old._etag } : { operationType: 'Create', resourceBody }]);
+      });
+    },
   };
   return store;
 }
