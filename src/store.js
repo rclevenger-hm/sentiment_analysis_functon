@@ -75,6 +75,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
         await batch(tenant, [old ? { operationType: 'Replace', id: old.id, resourceBody, ifMatch: old._etag } : { operationType: 'Create', resourceBody }]);
       });
     },
+    async reserveUsage(tenant, units) { const key = usageKey(); return retry(async () => batch(tenant, [usageOperation(tenant, units, await raw(tenant, key), key)])); },
   };
   return store;
 }
