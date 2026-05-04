@@ -89,6 +89,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
         return { job: { ...job, parts: [] }, created: true };
       });
     },
+    async enqueue(tenantId, jobId) { await queue.sendMessage(JSON.stringify({ tenantId, jobId }), { messageTimeToLive: 86400 }); },
   };
   return store;
 }
