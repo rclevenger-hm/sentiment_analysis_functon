@@ -76,6 +76,19 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       });
     },
     async reserveUsage(tenant, units) { const key = usageKey(); return retry(async () => batch(tenant, [usageOperation(tenant, units, await raw(tenant, key), key)])); },
+    async createJob(job, units) {
+      const key = usageKey();
+      return retry(async () => {
+        const old = await raw(job.tenantId, job.key);
+        if (old) {
+          if (old.expiresAt <= now()) throw new HttpError(409, 'EXPIRED_KEY', 'Use a new Idempotency-Key');
+          return { job: old, created: false };
+        }
+        const operation = usageOperation(job.tenantId, units, await raw(job.tenantId, key), key);
+        await batch(job.tenantId, [{ operationType: 'Create', resourceBody: doc({ ...job, parts: [] }) }, operation]);
+        return { job: { ...job, parts: [] }, created: true };
+      });
+    },
   };
   return store;
 }
