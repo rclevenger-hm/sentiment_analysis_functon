@@ -90,6 +90,15 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       });
     },
     async enqueue(tenantId, jobId) { await queue.sendMessage(JSON.stringify({ tenantId, jobId }), { messageTimeToLive: 86400 }); },
+    async claim(tenant, jobId) {
+      try {
+        return await mutate(tenant, `JOB#${jobId}`, (job) => {
+          if (final(job.status) || job.leaseUntil > now()) return null;
+          if ((job.attempts || 0) >= 5) return { ...job, status: 'FAILED', failureReason: 'Worker retry limit exceeded. Completed records remain available.', updatedAt: clock().toISOString() };
+          return { ...job, status: 'RUNNING', attempts: (job.attempts || 0) + 1, leaseToken: randomUUID(), leaseUntil: now() + 180, updatedAt: clock().toISOString() };
+        }).then((job) => job?.status === 'RUNNING' ? job : null);
+      } catch (e) { if (e.status === 404) return null; throw e; }
+    },
   };
   return store;
 }
