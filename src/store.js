@@ -110,6 +110,10 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
         await batch(job.tenantId, ops);
       });
     },
+    async fail(tenant, jobId) {
+      try { await mutate(tenant, `JOB#${jobId}`, (job) => final(job.status) || job.leaseUntil > now() || (job.attempts || 0) < 5 ? null : { ...job, status: 'FAILED', failureReason: 'Worker retry limit exceeded. Completed records remain available.', updatedAt: clock().toISOString() }); }
+      catch (e) { if (e.status !== 404) throw e; }
+    },
   };
   return store;
 }
