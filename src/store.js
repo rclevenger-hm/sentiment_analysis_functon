@@ -114,6 +114,14 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       try { await mutate(tenant, `JOB#${jobId}`, (job) => final(job.status) || job.leaseUntil > now() || (job.attempts || 0) < 5 ? null : { ...job, status: 'FAILED', failureReason: 'Worker retry limit exceeded. Completed records remain available.', updatedAt: clock().toISOString() }); }
       catch (e) { if (e.status !== 404) throw e; }
     },
+    async results(job) {
+      const records = (await Promise.all((job.parts || []).map((p) => store.getObject(p)))).flat();
+      if (job.status === 'FAILED' && job.offset < job.total) {
+        const input = await store.getObject(job.inputKey);
+        records.push(...input.records.slice(job.offset).map((r) => ({ ...r, error: r.error || { code: 'JOB_FAILED', message: 'Retry limit exceeded before this record completed' } })));
+      }
+      return records;
+    },
   };
   return store;
 }
