@@ -99,6 +99,17 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
         }).then((job) => job?.status === 'RUNNING' ? job : null);
       } catch (e) { if (e.status === 404) return null; throw e; }
     },
+    async checkpoint(job, offset, summary, part, alert) {
+      return retry(async () => {
+        const current = await raw(job.tenantId, job.key);
+        if (!current || current.status !== 'RUNNING' || current.expiresAt <= now() || current.leaseUntil <= now() || current.leaseToken !== job.leaseToken || current.offset !== job.offset) throw new HttpError(409, 'LEASE_LOST', 'Worker lease expired');
+        const next = { ...current, offset, parts: [...(current.parts || []), part], status: summary ? (summary.failed || summary.insightFailures ? 'COMPLETED_WITH_ERRORS' : 'COMPLETED') : 'QUEUED', updatedAt: clock().toISOString(), ...(summary ? { summary } : {}) };
+        delete next.leaseToken; delete next.leaseUntil; delete next.attempts;
+        const ops = [{ operationType: 'Replace', id: current.id, resourceBody: doc(next), ifMatch: current._etag }];
+        if (alert) ops.push({ operationType: 'Create', resourceBody: doc({ tenantId: job.tenantId, key: `ALERT#${job.jobId}`, collectionId: `${job.tenantId}#alerts`, jobId: job.jobId, alert, acknowledged: false, createdAt: clock().toISOString(), expiresAt: job.expiresAt }) });
+        await batch(job.tenantId, ops);
+      });
+    },
   };
   return store;
 }
