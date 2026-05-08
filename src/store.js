@@ -139,6 +139,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       const page = await container.items.query({ query, parameters }, { partitionKey: tenant, maxItemCount: limit, continuationToken }).fetchNext();
       return { items: page.resources, nextCursor: page.continuationToken ? Buffer.from(JSON.stringify({ signature, token: page.continuationToken })).toString('base64url') : null };
     },
+    async putRule(tenantId, rule) { await container.items.upsert(doc({ tenantId, key: 'RULE#default', rule, expiresAt: store.expiry() })); },
   };
   return store;
 }
