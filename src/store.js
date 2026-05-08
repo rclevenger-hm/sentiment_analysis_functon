@@ -122,6 +122,23 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       }
       return records;
     },
+    async list(tenant, collection, { limit = 20, cursor, from, to, status } = {}) {
+      const signature = hash(JSON.stringify({ tenant, collection, from, to, status }));
+      let continuationToken;
+      if (cursor) {
+        try {
+          if (cursor.length > 16000) throw invalid('Invalid cursor');
+          const value = JSON.parse(Buffer.from(cursor, 'base64url').toString());
+          if (value.signature !== signature || typeof value.token !== 'string') throw invalid('Invalid cursor');
+          continuationToken = value.token;
+        } catch { throw invalid('Invalid cursor'); }
+      }
+      const parameters = [{ name: '@tenant', value: tenant }, { name: '@collection', value: `${tenant}#${collection}` }, { name: '@now', value: now() }, { name: '@from', value: from ? `${from}T00:00:00.000Z` : '0000' }, { name: '@to', value: to ? `${to}T23:59:59.999Z` : '9999' }];
+      if (status) parameters.push({ name: '@status', value: status });
+      const query = `SELECT * FROM c WHERE c.tenantId = @tenant AND c.collectionId = @collection AND c.expiresAt > @now AND c.createdAt >= @from AND c.createdAt <= @to${status ? ' AND c.status = @status' : ''} ORDER BY c.createdAt DESC`;
+      const page = await container.items.query({ query, parameters }, { partitionKey: tenant, maxItemCount: limit, continuationToken }).fetchNext();
+      return { items: page.resources, nextCursor: page.continuationToken ? Buffer.from(JSON.stringify({ signature, token: page.continuationToken })).toString('base64url') : null };
+    },
   };
   return store;
 }
