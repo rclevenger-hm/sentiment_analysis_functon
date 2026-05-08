@@ -140,6 +140,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       return { items: page.resources, nextCursor: page.continuationToken ? Buffer.from(JSON.stringify({ signature, token: page.continuationToken })).toString('base64url') : null };
     },
     async putRule(tenantId, rule) { await container.items.upsert(doc({ tenantId, key: 'RULE#default', rule, expiresAt: store.expiry() })); },
+    async acknowledge(tenant, jobId) { await mutate(tenant, `ALERT#${jobId}`, (value) => ({ ...value, acknowledged: true })); },
   };
   return store;
 }
