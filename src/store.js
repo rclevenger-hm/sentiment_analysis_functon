@@ -142,6 +142,7 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
     async putRule(tenantId, rule) { await container.items.upsert(doc({ tenantId, key: 'RULE#default', rule, expiresAt: store.expiry() })); },
     async acknowledge(tenant, jobId) { await mutate(tenant, `ALERT#${jobId}`, (value) => ({ ...value, acknowledged: true })); },
     async usage(tenant) { const date = clock().toISOString().slice(0, 10); const value = await store.get(tenant, `USAGE#${date}`); return { date, units: value?.units || 0, limit: quota, unit: 'accepted inference operations; targeted analysis counts twice', resetsAt: new Date(Date.parse(date) + 86400000).toISOString() }; },
+    async saveRecoveryCursor(cursor) { await container.items.upsert(doc({ tenantId: 'system-recovery', key: 'RECOVERY#cursor', cursor: cursor || null, expiresAt: store.expiry() })); },
   };
   return store;
 }
