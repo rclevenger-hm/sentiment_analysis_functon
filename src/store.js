@@ -143,6 +143,12 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
     async acknowledge(tenant, jobId) { await mutate(tenant, `ALERT#${jobId}`, (value) => ({ ...value, acknowledged: true })); },
     async usage(tenant) { const date = clock().toISOString().slice(0, 10); const value = await store.get(tenant, `USAGE#${date}`); return { date, units: value?.units || 0, limit: quota, unit: 'accepted inference operations; targeted analysis counts twice', resetsAt: new Date(Date.parse(date) + 86400000).toISOString() }; },
     async saveRecoveryCursor(cursor) { await container.items.upsert(doc({ tenantId: 'system-recovery', key: 'RECOVERY#cursor', cursor: cursor || null, expiresAt: store.expiry() })); },
+    async recover(cursor) {
+      const query = { query: 'SELECT * FROM c WHERE (c.status = "QUEUED" OR c.status = "RUNNING") AND c.expiresAt > @now AND c.updatedAt < @cutoff AND (NOT IS_DEFINED(c.leaseUntil) OR c.leaseUntil <= @now)', parameters: [{ name: '@now', value: now() }, { name: '@cutoff', value: new Date(clock().getTime() - 15 * 60000).toISOString() }] };
+      const page = await container.items.query(query, { maxItemCount: 100, continuationToken: cursor }).fetchNext();
+      for (const job of page.resources) await store.enqueue(job.tenantId, job.jobId);
+      return page.continuationToken;
+    }
   };
   return store;
 }
