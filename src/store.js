@@ -148,7 +148,8 @@ function createStore({ container, blobs, queue, config = process.env, clock = ()
       const page = await container.items.query(query, { maxItemCount: 100, continuationToken: cursor }).fetchNext();
       for (const job of page.resources) await store.enqueue(job.tenantId, job.jobId);
       return page.continuationToken;
-    }
+    },
   };
   return store;
 }
+module.exports = { createStore, final, conflict };
