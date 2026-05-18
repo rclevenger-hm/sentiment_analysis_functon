@@ -44,3 +44,4 @@ function createWorker({ store, analyzer, logger = console }) {
   }
   return { processJob, recover, async poison(value) { const { tenantId, jobId } = message(value); await store.fail(tenantId, jobId); } };
 }
+module.exports = { createWorker, message };
