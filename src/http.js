@@ -35,3 +35,4 @@ function createHttpAdapter({ authenticate, handler, logger = console }) {
     }
   };
 }
+module.exports = { createHttpAdapter, readBody };
