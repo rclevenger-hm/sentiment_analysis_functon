@@ -15,3 +15,4 @@ function getRuntime() {
   return runtime;
 }
 app.http('sentimentApi', { route: '{*path}', methods: ['GET', 'POST', 'PUT'], authLevel: 'anonymous', handler: (request, context) => getRuntime().http(request, context) });
+app.storageQueue('sentimentWorker', { queueName: 'sentiment-jobs', connection: 'WorkQueue', handler: (value) => getRuntime().worker.processJob(value) });
