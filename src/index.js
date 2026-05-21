@@ -17,3 +17,4 @@ function getRuntime() {
 app.http('sentimentApi', { route: '{*path}', methods: ['GET', 'POST', 'PUT'], authLevel: 'anonymous', handler: (request, context) => getRuntime().http(request, context) });
 app.storageQueue('sentimentWorker', { queueName: 'sentiment-jobs', connection: 'WorkQueue', handler: (value) => getRuntime().worker.processJob(value) });
 app.storageQueue('sentimentPoison', { queueName: 'sentiment-jobs-poison', connection: 'WorkQueue', handler: (value) => getRuntime().worker.poison(value) });
+app.timer('sentimentRecovery', { schedule: '0 */5 * * * *', useMonitor: true, handler: () => getRuntime().worker.recover() });
