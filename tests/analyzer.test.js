@@ -11,3 +11,8 @@ test('Azure batches never exceed ten documents and preserve order and stable IDs
   assert.equal(result[5].error.code, 'INVALID'); assert.equal(result[24].id, 'row-24'); assert.equal(result[24].sentiment, 'POSITIVE');
   assert.ok(calls.every((c) => c.options.disableServiceLogs && c.options.stringIndexType === 'Utf16CodeUnit'));
 });
+test('mixed sentiment does not invent a confidence score absent from Azure', async () => {
+  const analyzer = createAnalyzer({ async analyzeSentiment() { return [score('single', { sentiment: 'mixed' })]; } });
+  const result = await analyzer.single({ text: 'good and bad', languageCode: 'en' });
+  assert.equal(result.sentiment, 'MIXED'); assert.equal(result.sentimentScore.Mixed, undefined);
+});
