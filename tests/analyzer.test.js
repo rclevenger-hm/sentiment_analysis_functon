@@ -16,3 +16,8 @@ test('mixed sentiment does not invent a confidence score absent from Azure', asy
   const result = await analyzer.single({ text: 'good and bad', languageCode: 'en' });
   assert.equal(result.sentiment, 'MIXED'); assert.equal(result.sentimentScore.Mixed, undefined);
 });
+test('per-document errors preserve successful records without leaking provider messages', async () => {
+  const analyzer = createAnalyzer({ async analyzeSentiment() { return [score('0'), { id: '1', error: { code: 'InvalidDocument', message: 'secret feedback' } }]; } });
+  const result = await analyzer.batch([{ id: 'one', text: 'x' }, { id: 'two', text: 'y' }]);
+  assert.equal(result[0].sentiment, 'POSITIVE'); assert.equal(result[1].id, 'two'); assert.ok(result[1].error); assert.doesNotMatch(JSON.stringify(result), /secret feedback/);
+});
