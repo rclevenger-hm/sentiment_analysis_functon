@@ -21,3 +21,9 @@ test('per-document errors preserve successful records without leaking provider m
   const result = await analyzer.batch([{ id: 'one', text: 'x' }, { id: 'two', text: 'y' }]);
   assert.equal(result[0].sentiment, 'POSITIVE'); assert.equal(result[1].id, 'two'); assert.ok(result[1].error); assert.doesNotMatch(JSON.stringify(result), /secret feedback/);
 });
+test('request failures and transient document errors trigger queue retry', async () => {
+  const request = createAnalyzer({ async analyzeSentiment() { throw Object.assign(new Error('retry'), { statusCode: 429 }); } });
+  await assert.rejects(request.batch([{ text: 'hello' }]), /retry/);
+  const document = createAnalyzer({ async analyzeSentiment() { return [{ id: '0', error: { code: 'InternalServerError' } }]; } });
+  await assert.rejects(document.batch([{ text: 'hello' }]), /Retryable/);
+});
