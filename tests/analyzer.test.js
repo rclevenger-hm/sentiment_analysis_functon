@@ -27,3 +27,8 @@ test('request failures and transient document errors trigger queue retry', async
   const document = createAnalyzer({ async analyzeSentiment() { return [{ id: '0', error: { code: 'InternalServerError' } }]; } });
   await assert.rejects(document.batch([{ text: 'hello' }]), /Retryable/);
 });
+test('missing results and malformed scores become explicit per-record failures', async () => {
+  const analyzer = createAnalyzer({ async analyzeSentiment() { return [score('0', { confidenceScores: { positive: NaN } })]; } });
+  const results = await analyzer.batch([{ id: 'a', text: 'a' }, { id: 'b', text: 'b' }]);
+  assert.ok(results.every((r) => r.error));
+});
