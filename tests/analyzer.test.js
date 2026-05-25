@@ -32,3 +32,10 @@ test('missing results and malformed scores become explicit per-record failures',
   const results = await analyzer.batch([{ id: 'a', text: 'a' }, { id: 'b', text: 'b' }]);
   assert.ok(results.every((r) => r.error));
 });
+test('opinion offsets use UTF-16 and evidence remains bounded', () => {
+  const target = { text: 'battery', sentiment: 'negative', offset: 3, length: 7, confidenceScores: { positive: 0, negative: 1 } };
+  const detail = { sentences: [{ opinions: Array.from({ length: 12 }, () => ({ target, assessments: [{ text: 'bad', sentiment: 'negative', isNegated: false }] })) }] };
+  const result = opinions(detail, '😀 battery is bad');
+  assert.equal(result.offsetEncoding, 'Utf16CodeUnit'); assert.equal(result.entities.length, 10); assert.ok(result.entitiesTruncated);
+  assert.equal('😀 battery is bad'.slice(result.entities[0].mentions[0].beginOffset, result.entities[0].mentions[0].endOffset), 'battery');
+});
