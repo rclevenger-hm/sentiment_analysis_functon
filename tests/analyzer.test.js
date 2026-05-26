@@ -43,3 +43,8 @@ test('all-invalid input never makes a billable Azure request', async () => {
   const analyzer = createAnalyzer({ async analyzeSentiment() { throw new Error('must not call'); } });
   const records = [{ id: 'one', error: { code: 'INVALID' } }]; assert.deepEqual(await analyzer.batch(records), records);
 });
+test('traditional Chinese alias and Azure model version are preserved correctly', async () => {
+  let input; const analyzer = createAnalyzer({ async analyzeSentiment(documents) { input = documents; return Object.assign([score('single')], { modelVersion: 'model-test' }); } });
+  const result = await analyzer.single({ text: '服務很好', languageCode: 'zh-TW' });
+  assert.equal(input[0].language, 'zh-hant'); assert.equal(result.modelVersion, 'model-test');
+});
