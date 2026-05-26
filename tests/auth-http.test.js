@@ -13,3 +13,6 @@ async function signer() {
   const auth = createAuthenticator(config, (token, _keys, options) => jose.jwtVerify(token, keys.publicKey, options));
   return { token, auth, jose };
 }
+test('Entra authenticator verifies a real signed token and scopes by directory/object IDs', async () => {
+  const f = await signer(); assert.deepEqual(await f.auth(`Bearer ${await f.token()}`), { tid: config.ENTRA_TENANT_ID, oid });
+});
