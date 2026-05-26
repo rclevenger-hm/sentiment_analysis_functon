@@ -16,3 +16,7 @@ async function signer() {
 test('Entra authenticator verifies a real signed token and scopes by directory/object IDs', async () => {
   const f = await signer(); assert.deepEqual(await f.auth(`Bearer ${await f.token()}`), { tid: config.ENTRA_TENANT_ID, oid });
 });
+for (const [label, claims, options] of [
+  ['expired', {}, { exp: 1 }], ['wrong issuer', {}, { issuer: 'https://attacker.example' }], ['wrong audience', {}, { audience: 'other-api' }],
+  ['wrong directory', { tid: 'other' }, {}], ['missing object', { oid: null }, {}],
+]) test(`Entra rejects ${label} tokens`, async () => { const f = await signer(); await assert.rejects(f.auth(`Bearer ${await f.token(claims, options)}`), (e) => e.status === 401); });
