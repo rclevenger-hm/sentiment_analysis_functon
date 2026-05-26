@@ -39,3 +39,7 @@ test('opinion offsets use UTF-16 and evidence remains bounded', () => {
   assert.equal(result.offsetEncoding, 'Utf16CodeUnit'); assert.equal(result.entities.length, 10); assert.ok(result.entitiesTruncated);
   assert.equal('😀 battery is bad'.slice(result.entities[0].mentions[0].beginOffset, result.entities[0].mentions[0].endOffset), 'battery');
 });
+test('all-invalid input never makes a billable Azure request', async () => {
+  const analyzer = createAnalyzer({ async analyzeSentiment() { throw new Error('must not call'); } });
+  const records = [{ id: 'one', error: { code: 'INVALID' } }]; assert.deepEqual(await analyzer.batch(records), records);
+});
