@@ -24,3 +24,8 @@ test('tokens without permission receive 403; delegated scopes are accepted', asy
   const f = await signer(); await assert.rejects(f.auth(`Bearer ${await f.token({ roles: [] })}`), (e) => e.status === 403);
   assert.equal((await f.auth(`Bearer ${await f.token({ roles: [], scp: 'Sentiment.Access' })}`)).oid, oid);
 });
+test('modified signatures and unsigned tokens cannot authenticate', async () => {
+  const f = await signer(); const signed = await f.token(); const parts = signed.split('.'); parts[1] = Buffer.from(JSON.stringify({ tid: config.ENTRA_TENANT_ID, oid, roles: ['Sentiment.User'] })).toString('base64url');
+  await assert.rejects(f.auth(`Bearer ${parts.join('.')}`), (e) => e.status === 401);
+  await assert.rejects(f.auth('Bearer eyJhbGciOiJub25lIn0.e30.'), (e) => e.status === 401);
+});
