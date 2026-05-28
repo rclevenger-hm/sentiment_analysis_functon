@@ -29,3 +29,7 @@ test('modified signatures and unsigned tokens cannot authenticate', async () => 
   await assert.rejects(f.auth(`Bearer ${parts.join('.')}`), (e) => e.status === 401);
   await assert.rejects(f.auth('Bearer eyJhbGciOiJub25lIn0.e30.'), (e) => e.status === 401);
 });
+test('missing, malformed and oversized authorization headers are rejected', async () => {
+  const auth = createAuthenticator(config);
+  for (const header of [undefined, '', 'Basic password', 'Bearer a b', `Bearer ${'a'.repeat(20000)}`]) await assert.rejects(auth(header), (e) => e.status === 401);
+});
