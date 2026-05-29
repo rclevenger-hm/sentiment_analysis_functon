@@ -33,3 +33,4 @@ test('missing, malformed and oversized authorization headers are rejected', asyn
   const auth = createAuthenticator(config);
   for (const header of [undefined, '', 'Basic password', 'Bearer a b', `Bearer ${'a'.repeat(20000)}`]) await assert.rejects(auth(header), (e) => e.status === 401);
 });
+function request(body = '{}', headers = {}) { const native = new Request('https://example.test/api/jobs?limit=3', { method: 'POST', body, headers }); return Object.assign(native, { params: { path: 'jobs' } }); }
