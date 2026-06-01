@@ -35,3 +35,9 @@ test('missing, malformed and oversized authorization headers are rejected', asyn
 });
 function request(body = '{}', headers = {}) { const native = new Request('https://example.test/api/jobs?limit=3', { method: 'POST', body, headers }); return Object.assign(native, { params: { path: 'jobs' } }); }
 const logger = { error() {} };
+test('HTTP boundary authenticates before body reads and never trusts principal headers', async () => {
+  let called = false;
+  const adapter = createHttpAdapter({ authenticate: async () => { throw new HttpError(401, 'UNAUTHENTICATED', 'Token required'); }, handler: async () => { called = true; }, logger });
+  const result = await adapter(request('{bad', { 'x-ms-client-principal': 'forged' }), { invocationId: 'correlation' });
+  assert.equal(result.status, 401); assert.equal(called, false); assert.equal(result.headers['x-request-id'], 'correlation');
+});
