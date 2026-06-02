@@ -47,3 +47,8 @@ test('HTTP adapter preserves CSV bodies, filters and verified identity', async (
   const result = await adapter(request('text\nhello', { 'content-type': 'text/csv' }));
   assert.equal(result.status, 202); assert.equal(seen.body, 'text\nhello'); assert.equal(seen.queryStringParameters.limit, '3'); assert.equal(seen.requestContext.identity.oid, 'principal');
 });
+test('HTTP body is bounded while streaming and invalid UTF-8 is rejected', async () => {
+  const adapter = createHttpAdapter({ authenticate: async () => ({}), handler: async () => { throw new Error('must not reach core'); }, logger });
+  assert.equal((await adapter(request('a'.repeat(1024 * 1024 + 1)))).status, 413);
+  assert.equal((await adapter(request(new Uint8Array([255])))).status, 400);
+});
