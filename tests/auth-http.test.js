@@ -41,3 +41,9 @@ test('HTTP boundary authenticates before body reads and never trusts principal h
   const result = await adapter(request('{bad', { 'x-ms-client-principal': 'forged' }), { invocationId: 'correlation' });
   assert.equal(result.status, 401); assert.equal(called, false); assert.equal(result.headers['x-request-id'], 'correlation');
 });
+test('HTTP adapter preserves CSV bodies, filters and verified identity', async () => {
+  let seen;
+  const adapter = createHttpAdapter({ authenticate: async () => ({ tid: 'directory', oid: 'principal' }), handler: async (event) => { seen = event; return { statusCode: 202, headers: { location: '/jobs/one' }, body: '{}' }; }, logger });
+  const result = await adapter(request('text\nhello', { 'content-type': 'text/csv' }));
+  assert.equal(result.status, 202); assert.equal(seen.body, 'text\nhello'); assert.equal(seen.queryStringParameters.limit, '3'); assert.equal(seen.requestContext.identity.oid, 'principal');
+});
