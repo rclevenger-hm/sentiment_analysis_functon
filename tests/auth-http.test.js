@@ -52,3 +52,7 @@ test('HTTP body is bounded while streaming and invalid UTF-8 is rejected', async
   assert.equal((await adapter(request('a'.repeat(1024 * 1024 + 1)))).status, 413);
   assert.equal((await adapter(request(new Uint8Array([255])))).status, 400);
 });
+test('unexpected HTTP adapter failures hide upstream details', async () => {
+  const adapter = createHttpAdapter({ authenticate: async () => { throw new Error('secret endpoint and credential'); }, handler: async () => {}, logger });
+  const result = await adapter(request()); assert.equal(result.status, 503); assert.doesNotMatch(JSON.stringify(result), /secret endpoint/);
+});
