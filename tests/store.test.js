@@ -81,3 +81,7 @@ test('five failed claims reach a terminal state and preserve unprocessed record 
   const failed = await f.store.getJob('alice', job.jobId); assert.equal(failed.status, 'FAILED');
   assert.deepEqual((await f.store.results(failed)).map((r) => r.error.code), ['JOB_FAILED', 'JOB_FAILED']);
 });
+test('poison handler cannot terminate an active or fresh job', async () => {
+  const f = setup(); await f.store.createJob(f.job(), 2); await f.store.fail('alice', f.job().jobId);
+  assert.equal((await f.store.getJob('alice', f.job().jobId)).status, 'QUEUED');
+});
