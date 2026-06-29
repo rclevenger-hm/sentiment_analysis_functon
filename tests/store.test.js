@@ -85,3 +85,8 @@ test('poison handler cannot terminate an active or fresh job', async () => {
   const f = setup(); await f.store.createJob(f.job(), 2); await f.store.fail('alice', f.job().jobId);
   assert.equal((await f.store.getJob('alice', f.job().jobId)).status, 'QUEUED');
 });
+test('checkpoint retries reset attempts so long jobs are not capped at five parts', async () => {
+  const f = setup(); await f.store.createJob(f.job(), 2); const job = await f.store.claim('alice', f.job().jobId);
+  await f.store.checkpoint(job, 1, undefined, 'one');
+  const next = await f.store.claim('alice', job.jobId); assert.equal(next.attempts, 1); assert.equal(next.offset, 1);
+});
