@@ -13,3 +13,8 @@ resource "azurerm_cosmosdb_account" "data" {
   }
   tags = local.tags
 }
+resource "azurerm_cosmosdb_sql_database" "data" {
+  name                = "sentiment"
+  resource_group_name = azurerm_resource_group.service.name
+  account_name        = azurerm_cosmosdb_account.data.name
+}
