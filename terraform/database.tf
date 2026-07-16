@@ -18,3 +18,12 @@ resource "azurerm_cosmosdb_sql_database" "data" {
   resource_group_name = azurerm_resource_group.service.name
   account_name        = azurerm_cosmosdb_account.data.name
 }
+resource "azurerm_cosmosdb_sql_container" "items" {
+  name                  = "items"
+  resource_group_name   = azurerm_resource_group.service.name
+  account_name          = azurerm_cosmosdb_account.data.name
+  database_name         = azurerm_cosmosdb_sql_database.data.name
+  partition_key_paths   = ["/tenantId"]
+  partition_key_version = 2
+  default_ttl           = var.retention_days * 86400
+}
