@@ -5,3 +5,7 @@ terraform {
     azurerm = { source = "hashicorp/azurerm", version = "~> 4.50" }
   }
 }
+provider "azurerm" {
+  features {}
+  storage_use_azuread = true
+}
