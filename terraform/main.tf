@@ -13,3 +13,8 @@ data "azurerm_client_config" "current" {}
 locals {
   tags = { service = "sentiment-analysis", environment = var.environment, managed_by = "terraform" }
 }
+resource "azurerm_resource_group" "service" {
+  name     = "${var.name}-${var.environment}"
+  location = var.location
+  tags     = local.tags
+}
