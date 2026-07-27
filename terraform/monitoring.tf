@@ -7,3 +7,11 @@ resource "azurerm_log_analytics_workspace" "service" {
   daily_quota_gb      = 1
   tags                = local.tags
 }
+resource "azurerm_application_insights" "service" {
+  name                = "${var.name}-${var.environment}"
+  resource_group_name = azurerm_resource_group.service.name
+  location            = var.location
+  workspace_id        = azurerm_log_analytics_workspace.service.id
+  application_type    = "web"
+  tags                = local.tags
+}
