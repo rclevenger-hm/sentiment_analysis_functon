@@ -64,3 +64,24 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "worker" {
   }
   action { action_groups = [azurerm_monitor_action_group.operations.id] }
 }
+resource "azurerm_consumption_budget_resource_group" "service" {
+  name              = "${var.name}-${var.environment}"
+  resource_group_id = azurerm_resource_group.service.id
+  amount            = var.monthly_budget
+  time_grain        = "Monthly"
+  time_period { start_date = var.budget_start_date }
+  notification {
+    enabled        = true
+    threshold      = 80
+    operator       = "GreaterThanOrEqualTo"
+    contact_emails = [var.notification_email]
+    contact_groups = [azurerm_monitor_action_group.operations.id]
+  }
+  notification {
+    enabled        = true
+    threshold      = 100
+    operator       = "GreaterThanOrEqualTo"
+    threshold_type = "Forecasted"
+    contact_emails = [var.notification_email]
+  }
+}
