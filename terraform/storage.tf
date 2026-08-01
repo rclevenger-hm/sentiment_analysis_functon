@@ -9,3 +9,8 @@ resource "azurerm_storage_account" "data" {
   shared_access_key_enabled       = false
   tags                            = local.tags
 }
+resource "azurerm_storage_container" "data" {
+  name                  = "feedback"
+  storage_account_id    = azurerm_storage_account.data.id
+  container_access_type = "private"
+}
