@@ -14,3 +14,8 @@ resource "azurerm_storage_container" "data" {
   storage_account_id    = azurerm_storage_account.data.id
   container_access_type = "private"
 }
+resource "azurerm_storage_container" "deployment" {
+  name                  = "deployment"
+  storage_account_id    = azurerm_storage_account.data.id
+  container_access_type = "private"
+}
