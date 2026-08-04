@@ -23,3 +23,7 @@ resource "azurerm_storage_queue" "jobs" {
   name                 = "sentiment-jobs"
   storage_account_name = azurerm_storage_account.data.name
 }
+resource "azurerm_storage_queue" "poison" {
+  name                 = "sentiment-jobs-poison"
+  storage_account_name = azurerm_storage_account.data.name
+}
