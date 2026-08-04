@@ -19,3 +19,7 @@ resource "azurerm_storage_container" "deployment" {
   storage_account_id    = azurerm_storage_account.data.id
   container_access_type = "private"
 }
+resource "azurerm_storage_queue" "jobs" {
+  name                 = "sentiment-jobs"
+  storage_account_name = azurerm_storage_account.data.name
+}
