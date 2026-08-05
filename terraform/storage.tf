@@ -27,3 +27,17 @@ resource "azurerm_storage_queue" "poison" {
   name                 = "sentiment-jobs-poison"
   storage_account_name = azurerm_storage_account.data.name
 }
+resource "azurerm_storage_management_policy" "retention" {
+  storage_account_id = azurerm_storage_account.data.id
+  rule {
+    name    = "delete-feedback"
+    enabled = true
+    filters {
+      prefix_match = ["feedback/"]
+      blob_types   = ["blockBlob"]
+    }
+    actions {
+      base_blob { delete_after_days_since_creation_greater_than = var.retention_days }
+    }
+  }
+}
