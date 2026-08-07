@@ -5,3 +5,11 @@ variable "name" {
     error_message = "Use 5–17 lowercase alphanumeric characters, starting with a letter; names must be globally unique."
   }
 }
+variable "environment" {
+  type    = string
+  default = "dev"
+  validation {
+    condition     = contains(["dev", "stage", "prod"], var.environment)
+    error_message = "Choose dev, stage, or prod."
+  }
+}
