@@ -14,3 +14,10 @@ variable "environment" {
   }
 }
 variable "location" { type = string }
+variable "entra_tenant_id" {
+  type = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.entra_tenant_id))
+    error_message = "Provide the Entra directory GUID."
+  }
+}
