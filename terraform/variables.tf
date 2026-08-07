@@ -13,3 +13,4 @@ variable "environment" {
     error_message = "Choose dev, stage, or prod."
   }
 }
+variable "location" { type = string }
