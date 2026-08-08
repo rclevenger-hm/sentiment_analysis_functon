@@ -21,3 +21,10 @@ variable "entra_tenant_id" {
     error_message = "Provide the Entra directory GUID."
   }
 }
+variable "entra_audience" {
+  type = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.entra_audience))
+    error_message = "Provide the v2 API application client GUID."
+  }
+}
