@@ -28,3 +28,10 @@ variable "entra_audience" {
     error_message = "Provide the v2 API application client GUID."
   }
 }
+variable "notification_email" {
+  type = string
+  validation {
+    condition     = can(regex("^[^@ ]+@[^@ ]+\\.[^@ ]+$", var.notification_email))
+    error_message = "Provide an email for operational and budget alerts."
+  }
+}
