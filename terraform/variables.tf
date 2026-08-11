@@ -35,3 +35,11 @@ variable "notification_email" {
     error_message = "Provide an email for operational and budget alerts."
   }
 }
+variable "daily_analysis_limit" {
+  type    = number
+  default = 1000
+  validation {
+    condition     = var.daily_analysis_limit >= 1 && var.daily_analysis_limit <= 100000 && floor(var.daily_analysis_limit) == var.daily_analysis_limit
+    error_message = "Daily limit must be an integer from 1 to 100000."
+  }
+}
