@@ -59,3 +59,11 @@ variable "retention_days" {
     error_message = "Retention must be 1–365 whole days."
   }
 }
+variable "maximum_instances" {
+  type    = number
+  default = 40
+  validation {
+    condition     = var.maximum_instances >= 40 && var.maximum_instances <= 100 && floor(var.maximum_instances) == var.maximum_instances
+    error_message = "Set a bounded Flex scale ceiling of 40–100 instances."
+  }
+}
