@@ -67,3 +67,11 @@ variable "maximum_instances" {
     error_message = "Set a bounded Flex scale ceiling of 40–100 instances."
   }
 }
+variable "monthly_budget" {
+  type    = number
+  default = 100
+  validation {
+    condition     = var.monthly_budget > 0
+    error_message = "Budget must be positive (subscription billing currency)."
+  }
+}
