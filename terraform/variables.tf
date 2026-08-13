@@ -75,3 +75,10 @@ variable "monthly_budget" {
     error_message = "Budget must be positive (subscription billing currency)."
   }
 }
+variable "budget_start_date" {
+  type = string
+  validation {
+    condition     = can(regex("^\\d{4}-\\d{2}-01T00:00:00Z$", var.budget_start_date))
+    error_message = "Use the first day of the deployment month, YYYY-MM-01T00:00:00Z."
+  }
+}
