@@ -30,3 +30,8 @@ run "secure_defaults" {
     error_message = "Retention must never delete deployment blobs."
   }
 }
+run "reject_unbounded_quota" {
+  command = plan
+  variables { daily_analysis_limit = -1 }
+  expect_failures = [var.daily_analysis_limit]
+}
