@@ -1,1 +1,9 @@
 mock_provider "azurerm" {}
+variables {
+  name               = "sentimenttest"
+  location           = "eastus"
+  entra_tenant_id    = "00000000-0000-0000-0000-000000000001"
+  entra_audience     = "00000000-0000-0000-0000-000000000002"
+  notification_email = "owner@example.com"
+  budget_start_date  = "2026-10-01T00:00:00Z"
+}
