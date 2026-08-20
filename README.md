@@ -12,3 +12,21 @@ Azure Functions service for individual text and collections of customer feedback
 - Entra access tokens, signed-token verification, tenant isolation, atomic quotas, per-minute request limits, private storage and managed identities.
 - Terraform with remote state, OIDC deployment, retention, Application Insights, error alarms, and resource-group budgets.
 
+## Architecture
+
+```mermaid
+flowchart TD
+  Client[Entra client] --> API[HTTP Function]
+  API --> Language[Azure AI Language]
+  API --> Cosmos[Cosmos DB]
+  API --> Blob[Private Blob Storage]
+  API --> Queue[Storage Queue]
+  Queue --> Worker[Queue Function]
+  Worker --> Language
+  Worker --> Cosmos
+  Worker --> Blob
+  Recovery[Recovery timer] --> Queue
+```
+
+Functions v4 / Node.js 24 on Flex Consumption. Cosmos partitions by a hash of the verified directory and object ID. Job creation and quota reservation commit in one transaction. Worker checkpoints publish immutable blob pointers and alerts in one transaction; expired workers cannot overwrite a newer result.
+
