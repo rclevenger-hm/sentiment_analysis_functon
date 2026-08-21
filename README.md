@@ -30,3 +30,38 @@ flowchart TD
 
 Functions v4 / Node.js 24 on Flex Consumption. Cosmos partitions by a hash of the verified directory and object ID. Job creation and quota reservation commit in one transaction. Worker checkpoints publish immutable blob pointers and alerts in one transaction; expired workers cannot overwrite a newer result.
 
+## Quick start
+
+```bash
+npm ci
+npm run lint
+npm test
+npm run build
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
+terraform -chdir=terraform test
+```
+
+Local tests require no Azure subscription. Cloud deployment requires the Entra registration, state backend, and identity assignments in [DEPLOYMENT.md](docs/DEPLOYMENT.md). The deployment workflow runs only on explicit dispatch and creates billable Azure resources.
+
+After deployment, use an identity granted `Sentiment.User` or delegated `Sentiment.Access`:
+
+```bash
+az login
+export API_ENDPOINT=https://YOUR_FUNCTION.azurewebsites.net/api
+export ENTRA_AUDIENCE=YOUR_API_CLIENT_GUID
+npm run client -- analyze 'The screen is excellent but delivery was late.' --targeted
+npm run client -- submit examples/feedback.csv --key feedback-2026-09 --targeted
+npm run client -- status JOB_ID
+npm run client -- results JOB_ID --sentiment NEGATIVE
+npm run client -- report JOB_ID --product widget
+npm run client -- export JOB_ID --format csv --out results.csv
+npm run client -- history
+npm run client -- compare CURRENT_JOB_ID BASELINE_JOB_ID
+npm run client -- rule examples/alert-rule.json
+npm run client -- alerts
+npm run client -- usage
+```
+
+Reuse the printed idempotency key when retrying an upload. The same key plus the same data reuses one job and one allowance reservation; changed data returns `409`. Single requests do not retain feedback history. Submit a one-record job for retained reports and alerts.
+
