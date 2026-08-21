@@ -65,3 +65,9 @@ npm run client -- usage
 
 Reuse the printed idempotency key when retrying an upload. The same key plus the same data reuses one job and one allowance reservation; changed data returns `409`. Single requests do not retain feedback history. Submit a one-record job for retained reports and alerts.
 
+## Differences from the AWS service
+
+Azure opinion mining and Comprehend targeted sentiment use different models and evidence structures; predictions are not expected to match. Azure emits three confidence scores even when the label is `MIXED`, so this service does not manufacture a fourth. Source offsets explicitly use JavaScript UTF-16 units. The existing `zh-TW` input code maps to Azure `zh-hant`.
+
+Additional safeguards include per-minute request limits, transactional alert publication, immutable result candidates, persisted recovery pagination, and cryptographic JWT validation independent of caller-supplied platform headers. See the full [parity matrix](docs/PARITY.md).
+
