@@ -71,3 +71,12 @@ Azure opinion mining and Comprehend targeted sentiment use different models and 
 
 Additional safeguards include per-minute request limits, transactional alert publication, immutable result candidates, persisted recovery pagination, and cryptographic JWT validation independent of caller-supplied platform headers. See the full [parity matrix](docs/PARITY.md).
 
+## Documentation
+
+- [API](docs/API.md) / [OpenAPI](openapi.yaml)
+- [Deployment](docs/DEPLOYMENT.md) and [Entra/OIDC](docs/IDENTITY.md)
+- [Operations](docs/OPERATIONS.md), [Security](docs/SECURITY.md), and [Costs](docs/COSTS.md)
+- [Integration](docs/INTEGRATION.md) and [validation checklist](docs/VALIDATION.md)
+- [Architecture decisions](docs/ARCHITECTURE.md) and [roadmap](docs/ROADMAP.md)
+
+Live Azure deployment, model responses, identity propagation, alert delivery, and recovery injection require subscription verification; local tests use substitutes for cloud services. MIT licensed; source attribution is preserved in [NOTICE](NOTICE).
