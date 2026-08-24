@@ -19,3 +19,15 @@ Base URL: `https://FUNCTION.azurewebsites.net/api`. All routes require `Authoriz
 | GET | `/alerts` | Caller alert feed with cursor |
 | PUT | `/alerts/{jobId}/acknowledge` | Idempotent acknowledgement |
 
+## Submit
+
+```json
+{"label":"September reviews","targeted":true,"records":[
+  {"id":"ticket-123","text":"Great screen, poor battery.","languageCode":"en","date":"2026-09-30","product":"phone","source":"support"}
+]}
+```
+
+`POST /jobs` accepts `Content-Type: application/json` or `text/csv`. CSV columns: `id,text,languageCode,date,product,source`; only text is required. Quoting, embedded newlines, UTF-8 BOM and escaped quotes are supported. For CSV opinion mining use `?targeted=true`. Single input uses `{text,languageCode,targeted}`.
+
+Bounds: 1 MiB decoded body; 200 records; 5,000 UTF-8 bytes per trimmed text; 120-character labels/product/source; 128-character record IDs. Missing IDs become `row-N`. Duplicate IDs reject the whole upload. Invalid individual text/metadata returns a retained row error. Unsupported content types return 415.
+
