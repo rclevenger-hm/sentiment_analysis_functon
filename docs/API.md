@@ -31,3 +31,9 @@ Base URL: `https://FUNCTION.azurewebsites.net/api`. All routes require `Authoriz
 
 Bounds: 1 MiB decoded body; 200 records; 5,000 UTF-8 bytes per trimmed text; 120-character labels/product/source; 128-character record IDs. Missing IDs become `row-N`. Duplicate IDs reject the whole upload. Invalid individual text/metadata returns a retained row error. Unsupported content types return 415.
 
+## Filters and pagination
+
+Results/reports/exports/comparison accept `sentiment`, `minConfidence`, `languageCode`, `source`, `product`, `from`, and `to`. Dates are validated `YYYY-MM-DD`; absent record dates use submission date. Rates use successfully analyzed records. Comparison changes describe samples and do not establish statistical significance.
+
+Result limits: 1–100, default 50; offsets: 0–200. History/feed limits: 1–100, default 20. A cursor belongs to its caller, collection and filter set. Keep following `nextCursor` even if a page is empty. Partial job reports include committed records only; failed jobs include explicit errors for unprocessed rows.
+
