@@ -45,3 +45,6 @@ Every application error has `code`, `error`, and `requestId`. Codes include `INV
 
 A job submission returns 202 while unfinished and 200 when a matching job already finished. Reusing a key with changed normalized content returns 409. Keys are 8–128 ASCII letters/digits/dot/underscore/colon/hyphen. Expired keys still awaiting Cosmos TTL deletion return `EXPIRED_KEY`; choose a new key.
 
+## Allowances
+
+Single requests reserve one unit, or two for targeted analysis, before inference. Jobs atomically reserve units only for valid rows. Retrying a job with the same key does not charge again. Provider failure does not refund accepted usage. Limits reset at UTC midnight; minute request counters are separate. These are application allowances, not a dollar-accurate cloud billing meter.
