@@ -37,3 +37,11 @@ Results/reports/exports/comparison accept `sentiment`, `minConfidence`, `languag
 
 Result limits: 1–100, default 50; offsets: 0–200. History/feed limits: 1–100, default 20. A cursor belongs to its caller, collection and filter set. Keep following `nextCursor` even if a page is empty. Partial job reports include committed records only; failed jobs include explicit errors for unprocessed rows.
 
+## Response and errors
+
+Single responses expose `sentiment`, `sentimentScore.Positive/Negative/Neutral`, and optional `entities`, `entitiesTruncated`, `offsetEncoding`, `modelVersion`. `MIXED` is a valid label without a Mixed score. Opinion evidence is capped at ten aspects and three assessments per aspect.
+
+Every application error has `code`, `error`, and `requestId`. Codes include `INVALID_REQUEST`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `IDEMPOTENCY_CONFLICT`, `EXPIRED_KEY`, `DAILY_LIMIT_EXCEEDED`, `RATE_LIMIT_EXCEEDED`, `UPSTREAM_UNAVAILABLE`, and `SERVICE_UNAVAILABLE`. Infrastructure-level failures can have an Azure-managed body. Responses include `x-request-id` and `Cache-Control: no-store`; 429 includes `Retry-After`.
+
+A job submission returns 202 while unfinished and 200 when a matching job already finished. Reusing a key with changed normalized content returns 409. Keys are 8–128 ASCII letters/digits/dot/underscore/colon/hyphen. Expired keys still awaiting Cosmos TTL deletion return `EXPIRED_KEY`; choose a new key.
+
