@@ -8,3 +8,7 @@ Input, reporting and routing logic reuse the source contract. Azure Functions tr
 
 Job deduplication and quota reservation must commit atomically within one caller partition. Cosmos transactional batches combine job creation with a conditional counter replacement. ETags resolve races between callers and workers. This avoids a quota update succeeding while its corresponding job creation fails, or vice versa.
 
+## Immutable candidates
+
+A blob upload cannot join a Cosmos transaction. Each lease therefore gets its own candidate path. Only the committed Cosmos pointer makes a candidate visible in results. Old workers can leave storage objects but cannot replace a winning pointer. Final alerts share the checkpoint transaction.
+
