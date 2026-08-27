@@ -12,3 +12,7 @@ Job deduplication and quota reservation must commit atomically within one caller
 
 A blob upload cannot join a Cosmos transaction. Each lease therefore gets its own candidate path. Only the committed Cosmos pointer makes a candidate visible in results. Old workers can leave storage objects but cannot replace a winning pointer. Final alerts share the checkpoint transaction.
 
+## Queue with durable recovery
+
+Queue dispatch cannot join the Cosmos transaction either. The persisted `QUEUED` job acts as the durable record of accepted work. A timer repairs missing dispatches with a paged recovery scan. This is at-least-once processing with idempotent commits; Azure Language inference may run more than once.
+
