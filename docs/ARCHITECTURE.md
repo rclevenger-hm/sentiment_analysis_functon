@@ -16,3 +16,6 @@ A blob upload cannot join a Cosmos transaction. Each lease therefore gets its ow
 
 Queue dispatch cannot join the Cosmos transaction either. The persisted `QUEUED` job acts as the durable record of accepted work. A timer repairs missing dispatches with a paged recovery scan. This is at-least-once processing with idempotent commits; Azure Language inference may run more than once.
 
+## Model semantics
+
+The Azure provider is not wrapped to pretend it is Comprehend. The four-label response is preserved, while actual three-score confidence output and aspect/assessment evidence are exposed accurately. English-only targeted validation retains the established contract until other language behavior is tested.
