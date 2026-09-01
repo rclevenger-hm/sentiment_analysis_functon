@@ -20,3 +20,21 @@ terraform -chdir=terraform apply deploy.tfplan
 
 For an existing deployment, initialize against its existing remote state or run `terraform import` for existing resources. Never apply a fresh empty state over an existing environment. Separate state keys and resource names for dev/stage/prod.
 
+## GitHub environment variables
+
+| Variable | Value |
+|---|---|
+| `AZURE_CLIENT_ID` | Federated deployment application client ID |
+| `AZURE_TENANT_ID` | Directory GUID |
+| `AZURE_SUBSCRIPTION_ID` | Subscription GUID |
+| `SERVICE_NAME` | Globally unique lowercase name, 5–17 characters |
+| `AZURE_LOCATION` | Supported Azure region |
+| `ENTRA_AUDIENCE` | API registration client GUID |
+| `NOTIFICATION_EMAIL` | Operator email |
+| `BUDGET_START_DATE` | First of deployment month, UTC ISO format |
+| `MONTHLY_BUDGET` | Optional, defaults to 100 in billing currency |
+| `TF_STATE_RESOURCE_GROUP` | State account resource group |
+| `TF_STATE_STORAGE_ACCOUNT` | State account name |
+
+Dispatch **Deploy Azure**, selecting the matching protected environment. The job tests/builds code, initializes OIDC remote state, applies a saved plan, then deploys the complete artifact with Azure/functions-action using Flex OneDeploy. Production node modules are installed into the artifact; no remote build is assumed. Do not add `WEBSITE_RUN_FROM_PACKAGE` or legacy deployment settings to Flex.
+
