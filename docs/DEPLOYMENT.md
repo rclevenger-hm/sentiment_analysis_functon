@@ -38,3 +38,7 @@ For an existing deployment, initialize against its existing remote state or run 
 
 Dispatch **Deploy Azure**, selecting the matching protected environment. The job tests/builds code, initializes OIDC remote state, applies a saved plan, then deploys the complete artifact with Azure/functions-action using Flex OneDeploy. Production node modules are installed into the artifact; no remote build is assumed. Do not add `WEBSITE_RUN_FROM_PACKAGE` or legacy deployment settings to Flex.
 
+## Local Functions host
+
+For cloud-connected local work install Azure Functions Core Tools v4, copy `local.settings.json.example` to ignored `local.settings.json`, populate endpoints, and run `npm run build && npm start`. For developer credentials remove explicit `__credential=managedidentity`/`__clientId` host/queue settings and use the Core Tools identity connection support with your signed-in principal. Grant your developer identity only the needed data roles. Unit tests need neither Core Tools nor cloud endpoints.
+
