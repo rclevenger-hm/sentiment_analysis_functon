@@ -46,3 +46,6 @@ For cloud-connected local work install Azure Functions Core Tools v4, copy `loca
 
 Wait for managed-identity role propagation, then run `npm run smoke` with an authorized consumer identity and the endpoint/audience set. It submits billable sample records, verifies anonymous rejection, duplicate submission, partial errors, reports, and CSV download. Run the remaining [live validation checklist](VALIDATION.md) before advertising production readiness.
 
+## Rollback
+
+Rebuild and redeploy the previous tested source commit through the same OIDC deployment path. Review the Terraform plan before applying any infrastructure rollback; never replace Cosmos/storage just to roll back function code. Preserve state backups and data. Stop queue processing before incompatible data migrations. There is no destructive reset or automatic destroy workflow.
