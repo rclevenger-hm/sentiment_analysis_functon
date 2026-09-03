@@ -42,3 +42,7 @@ Dispatch **Deploy Azure**, selecting the matching protected environment. The job
 
 For cloud-connected local work install Azure Functions Core Tools v4, copy `local.settings.json.example` to ignored `local.settings.json`, populate endpoints, and run `npm run build && npm start`. For developer credentials remove explicit `__credential=managedidentity`/`__clientId` host/queue settings and use the Core Tools identity connection support with your signed-in principal. Grant your developer identity only the needed data roles. Unit tests need neither Core Tools nor cloud endpoints.
 
+## After deployment
+
+Wait for managed-identity role propagation, then run `npm run smoke` with an authorized consumer identity and the endpoint/audience set. It submits billable sample records, verifies anonymous rejection, duplicate submission, partial errors, reports, and CSV download. Run the remaining [live validation checklist](VALIDATION.md) before advertising production readiness.
+
