@@ -10,3 +10,13 @@ The CLI requests `api://CLIENT_GUID/.default` using DefaultAzureCredential. For 
 
 JWT validation pins tenant-specific issuer/JWKS, audience and RS256. It requires expiration, issuance time, directory/object claims, then checks permission. `x-ms-client-principal`, `x-tenant-id` and similar request headers are ignored. `authLevel: anonymous` means the Functions key mechanism is disabled; application JWT authentication still runs before any body processing or data access.
 
+## Runtime identity
+
+Terraform creates a dedicated user-assigned managed identity with:
+
+- Cosmos built-in data contributor at the service database scope.
+- Cognitive Services User on the dedicated Language resource.
+- Storage Blob Data Owner, Storage Queue Data Contributor and Storage Account Contributor on the dedicated host/data storage account for Functions host, triggers, deployment and delegated SAS operations.
+
+No storage/Cosmos/Language keys are enabled. Runtime credentials do not grant access to unrelated resources. Storage Account Contributor is a host requirement for this configuration; keep the account dedicated and do not place unrelated data there.
+
