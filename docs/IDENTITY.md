@@ -20,3 +20,14 @@ Terraform creates a dedicated user-assigned managed identity with:
 
 No storage/Cosmos/Language keys are enabled. Runtime credentials do not grant access to unrelated resources. Storage Account Contributor is a host requirement for this configuration; keep the account dedicated and do not place unrelated data there.
 
+## Deployment federation
+
+Create a separate Entra app/service principal with a federated identity credential:
+
+- Issuer: `https://token.actions.githubusercontent.com`
+- Subject: `repo:rclevenger-hm/sentiment_analysis_functon:environment:dev` (repeat explicitly for stage/prod)
+- Audience: `api://AzureADTokenExchange`
+
+Grant resource management permissions at the deployment resource-group scope and the ability to assign the runtime roles. Creating the resource group or resource-group budgets may require additional parent-scope permissions; alternatively pre-create/import the group. State storage needs Blob Data Contributor. Terraform's Azure Storage data-plane resources require the deployment principal to hold Blob Data Contributor and Queue Data Contributor on the service storage scope, inherited from its resource group before deployment. Contributor alone does not grant these data permissions.
+
+Use protected GitHub environments and branch restrictions. Grant Role Based Access Control Administrator only where necessary for assignments. Limit federation to this exact repository/environment. No publish profiles or long-lived client secrets are required.
