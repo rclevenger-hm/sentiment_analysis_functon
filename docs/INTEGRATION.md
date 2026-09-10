@@ -6,3 +6,9 @@ Install with `npm ci`, sign in using a permitted consumer identity, and set `API
 
 The JavaScript example uses DefaultAzureCredential. The Python example needs `azure-identity`. A browser client should use MSAL authorization code with PKCE, request the API delegated scope, and keep access tokens out of URLs and persistent plain-text storage. Configure allowed CORS origins through Azure platform settings for the intended frontend; no browser UI or broad preflight policy is provisioned.
 
+## Retry policy
+
+Keep one idempotency key for each logical upload. Retry 429 after `Retry-After`, and transient 502/503 with bounded jitter/backoff. A 503 on submit can mean the job already exists but queue dispatch failed. Retry the same payload/key to recover it. Do not generate a new key on every network retry.
+
+Single analysis is not idempotent and can charge accepted allowance again after a retry. Use a one-record job when durable retry semantics matter. Poll status with modest intervals; all requests count toward the caller's minute limit. Keep following cursors in history/alerts.
+
