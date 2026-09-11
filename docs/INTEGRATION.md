@@ -12,3 +12,8 @@ Keep one idempotency key for each logical upload. Retry 429 after `Retry-After`,
 
 Single analysis is not idempotent and can charge accepted allowance again after a retry. Use a one-record job when durable retry semantics matter. Poll status with modest intervals; all requests count toward the caller's minute limit. Keep following cursors in history/alerts.
 
+## Result interpretation
+
+Azure labels and confidence are model outputs, not probabilities calibrated for a particular business use. Mixed sentiment does not have a fourth confidence field. Offset encoding is UTF-16: JavaScript `text.slice(beginOffset,endOffset)` matches the result. Opinion assessments can include `isNegated`.
+
+Use record IDs to connect failures and evidence to upstream systems. Reports use successful analyses as the denominator and expose failed counts. Do not compare rates without reviewing sample counts, sources, date ranges and failure rates. Sentiment is a triage signal, not a definitive judgment about a person.
