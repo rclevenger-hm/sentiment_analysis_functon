@@ -10,3 +10,7 @@ A claim holds a 180-second lease; function execution is capped at 120 seconds. Q
 
 Every worker writes a blob path containing its lease token. Cosmos publishes that pointer only when both lease ownership and expiry checks succeed. Final job status, summary and alert commit together. A failed transaction cannot publish a premature alert, and a stale worker cannot overwrite committed results. Unreferenced input/result/export candidates expire under Blob lifecycle management.
 
+## Recovery
+
+If enqueue fails after the Cosmos transaction, submission may return 503 even though a durable job exists. Retry using the same idempotency key. A five-minute timer scans work stalled for at least fifteen minutes, skipping active leases. It scans at most twenty 100-item pages per run and persists its continuation cursor between runs. Recovery may enqueue duplicates; claims arbitrate them safely. Cosmos expiration filters block stale jobs immediately, before TTL removal.
+
