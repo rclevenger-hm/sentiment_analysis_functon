@@ -6,3 +6,7 @@
 
 A claim holds a 180-second lease; function execution is capped at 120 seconds. Queue visibility after failure is 190 seconds. The worker processes 25 records per checkpoint with Azure calls of up to ten documents. Provider request failures throw so Azure retries the message. Input-level failures stay attached to the individual row. A poison-queue handler only fails an exhausted, unleased job; it cannot terminate fresh work.
 
+## Atomic output publication
+
+Every worker writes a blob path containing its lease token. Cosmos publishes that pointer only when both lease ownership and expiry checks succeed. Final job status, summary and alert commit together. A failed transaction cannot publish a premature alert, and a stale worker cannot overwrite committed results. Unreferenced input/result/export candidates expire under Blob lifecycle management.
+
