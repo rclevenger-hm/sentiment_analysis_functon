@@ -14,3 +14,7 @@ Every worker writes a blob path containing its lease token. Cosmos publishes tha
 
 If enqueue fails after the Cosmos transaction, submission may return 503 even though a durable job exists. Retry using the same idempotency key. A five-minute timer scans work stalled for at least fifteen minutes, skipping active leases. It scans at most twenty 100-item pages per run and persists its continuation cursor between runs. Recovery may enqueue duplicates; claims arbitrate them safely. Cosmos expiration filters block stale jobs immediately, before TTL removal.
 
+## Retention
+
+Default metadata and input retention is thirty days. Job metadata contains explicit `expiresAt`; APIs reject expired metadata immediately. Cosmos TTL and Blob lifecycle perform asynchronous physical cleanup. Blobs expire by creation time, so late exports/abandoned candidates can live later than the source job. Lifecycle excludes deployment artifacts. Alert rules also expire after the configured retention from their last update; clients should refresh desired rules.
+
