@@ -24,3 +24,13 @@ Use Application Insights request IDs to correlate responses with structured `req
 
 Monitor HTTP 5xx, function exceptions, poison queue length, queue age and Cosmos throttling. Terraform creates request-error and exception alerts; tune thresholds after real traffic. Query job progress if work appears stalled. Budget and operational notifications are separate from caller sentiment alerts. Sentiment alerts are read and acknowledged through the API.
 
+## Failure drills
+
+1. Disable a Language role briefly in staging; verify retries and terminal failures, then restore.
+2. Interrupt after a candidate blob upload; verify the next worker publishes exactly one result set.
+3. Break enqueue access; retry the same submission and confirm one quota charge plus timer recovery.
+4. Run two workers after lease expiry; verify only the current lease publishes.
+5. Deliver a completed job message again; verify zero additional inference calls.
+6. Restore access and monitor the poison queue. Do not blindly replay unbounded messages.
+
+Inference retries can incur duplicate Azure charges even though accepted application units are reserved once. The service does not claim exactly-once external billing.
