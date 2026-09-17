@@ -29,3 +29,10 @@ Baseline: `sentiment_analysis_lambda` main at `4c6bd13ea1c52ad016bba56dbf1011d83
 | Deployment | Terraform/S3 state/OIDC | Terraform/Azure Blob state/OIDC |
 | Monitoring | CloudWatch/SNS/Budget | Application Insights/Monitor/action group/budget |
 
+## Deliberate compatibility limits
+
+Opinion targets are aspects, not Comprehend's entity co-reference groups. Offsets use `Utf16CodeUnit`; clients must not interpret them as code-point indices. Mixed documents have no Mixed confidence, so a positive `minConfidence` filter excludes Mixed documents. These differences are documented rather than hidden behind fabricated values.
+
+Input languages remain `ar,de,en,es,fr,hi,it,ja,ko,pt,zh,zh-TW`; the final code maps `zh-TW` to `zh-hant`. Targeted requests remain English-only for parity and predictable validation. Broadening opinion-mining languages is a future independently tested feature.
+
+Alerts are a retained API feed. No outbound customer webhook or email integration is implied. Operational and cost alerts go to the configured operator email.
