@@ -6,3 +6,7 @@ Tokens are cryptographically verified against a fixed tenant JWKS endpoint, issu
 
 App-level tenant isolation is between individual Entra principals; group members do not automatically share data. Changing consumer service principal/object ID creates a different data scope. Federation and resource identities do not establish caller sharing.
 
+## Private data
+
+Azure Storage public blob access and shared keys are disabled. Cosmos local keys and Language API keys are disabled. TLS is required. Export links use read-only, HTTPS user-delegation SAS with a sixty-second lifetime and a single blob path. Anyone holding that link can download until expiry, so treat it as a temporary credential. Content is encrypted at rest by Azure's default service encryption; customer-managed encryption keys are not configured.
+
