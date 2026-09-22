@@ -10,3 +10,7 @@ App-level tenant isolation is between individual Entra principals; group members
 
 Azure Storage public blob access and shared keys are disabled. Cosmos local keys and Language API keys are disabled. TLS is required. Export links use read-only, HTTPS user-delegation SAS with a sixty-second lifetime and a single blob path. Anyone holding that link can download until expiry, so treat it as a temporary credential. Content is encrypted at rest by Azure's default service encryption; customer-managed encryption keys are not configured.
 
+## Input and output
+
+Bodies are capped while streaming; decoding rejects malformed UTF-8. CSV is parsed with quoting rules and row limits. JSON types, language codes, IDs and dates are validated. Formula-prefixed exported CSV cells are neutralized. Report evidence is bounded and is not a generated explanation of user intent.
+
