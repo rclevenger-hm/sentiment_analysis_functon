@@ -18,3 +18,7 @@ Bodies are capped while streaming; decoding rejects malformed UTF-8. CSV is pars
 
 Daily reservations and per-minute request counters use Cosmos optimistic concurrency. Both have bounded retries; backend failures fail closed. Function concurrency and maximum instance count bound scale but are not dollar-denominated spending caps. A dedicated frontend gateway/WAF can provide IP controls and pre-authentication DDoS filtering; this repository does not provision one.
 
+## Network and access scope
+
+Default endpoints are publicly routable with authenticated data access. Private endpoints, network ACLs and organization-wide conditional access are optional future hardening, not claimed features. The runtime storage role scope is the dedicated account; use separate deployment/host/data accounts if stricter separation is required. Terraform state contains infrastructure metadata and must remain private.
+
