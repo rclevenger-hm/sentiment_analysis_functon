@@ -22,3 +22,6 @@ Daily reservations and per-minute request counters use Cosmos optimistic concurr
 
 Default endpoints are publicly routable with authenticated data access. Private endpoints, network ACLs and organization-wide conditional access are optional future hardening, not claimed features. The runtime storage role scope is the dedicated account; use separate deployment/host/data accounts if stricter separation is required. Terraform state contains infrastructure metadata and must remain private.
 
+## Reporting a vulnerability
+
+Avoid posting customer records, credentials or signed export links in public issues. Send a minimal reproduction without secrets through the repository owner's chosen private channel. Rotate/revoke leaked credentials and inspect Azure audit logs where appropriate.
