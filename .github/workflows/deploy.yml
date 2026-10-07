@@ -1,0 +1,80 @@
+name: Deploy Azure
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [dev, stage, prod]
+        default: dev
+        required: true
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: ${{ inputs.environment }}
+    env:
+      ARM_USE_OIDC: 'true'
+      ARM_USE_AZUREAD: 'true'
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_name: ${{ vars.SERVICE_NAME }}
+      TF_VAR_environment: ${{ inputs.environment }}
+      TF_VAR_location: ${{ vars.AZURE_LOCATION }}
+      TF_VAR_entra_tenant_id: ${{ vars.AZURE_TENANT_ID }}
+      TF_VAR_entra_audience: ${{ vars.ENTRA_AUDIENCE }}
+      TF_VAR_notification_email: ${{ vars.NOTIFICATION_EMAIL }}
+      TF_VAR_budget_start_date: ${{ vars.BUDGET_START_DATE }}
+      TF_VAR_monthly_budget: ${{ vars.MONTHLY_BUDGET || '100' }}
+      TF_IN_AUTOMATION: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci && npm run lint && npm test && npm run build
+      - run: npm ci --omit=dev --prefix artifacts
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.5
+          terraform_wrapper: false
+      - name: Initialize remote state
+        env:
+          STATE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+          STATE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+          DEPLOY_ENV: ${{ inputs.environment }}
+        run: >-
+          terraform -chdir=terraform init -input=false -lockfile=readonly
+          -backend-config="resource_group_name=$STATE_GROUP"
+          -backend-config="storage_account_name=$STATE_ACCOUNT"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=sentiment/$DEPLOY_ENV.tfstate"
+      - run: terraform -chdir=terraform validate
+      - run: terraform -chdir=terraform plan -input=false -out=deploy.tfplan
+      - run: terraform -chdir=terraform apply -input=false deploy.tfplan
+      - id: outputs
+        run: |
+          echo "function_name=$(terraform -chdir=terraform output -raw function_name)" >> "$GITHUB_OUTPUT"
+          echo "resource_group=$(terraform -chdir=terraform output -raw resource_group)" >> "$GITHUB_OUTPUT"
+      - uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ steps.outputs.outputs.function_name }}
+          package: artifacts
+          sku: flexconsumption
+      - name: Check anonymous access is rejected
+        run: |
+          endpoint=$(terraform -chdir=terraform output -raw endpoint)
+          status=$(curl --retry 5 --retry-all-errors --retry-delay 5 -s -o /dev/null -w '%{http_code}' "$endpoint/usage")
+          test "$status" = 401

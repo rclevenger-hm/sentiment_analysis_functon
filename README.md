@@ -1,3 +1,82 @@
 # Azure Sentiment Analysis Service
 
-Importing the complete Azure implementation and dated Git history with validation. This workflow does not deploy Azure resources.
+Azure Functions service for individual text and collections of customer feedback. It ports the behavior of [sentiment_analysis_lambda](https://github.com/rclevenger-hm/sentiment_analysis_lambda) to Azure, including the bulk/reporting features introduced at source commit `4c6bd13`.
+
+## Features
+
+- Single text analysis with positive, negative, neutral, or mixed sentiment.
+- CSV/JSON uploads: 200 records, 1 MiB per request, 5,000 UTF-8 bytes per text, stable record IDs and per-record validation errors.
+- Optional English opinion mining, aspect evidence, assessment polarity and negation, source offsets, and bounded excerpts.
+- Resumable jobs, progress, caller-scoped history, metadata filters, daily trends, comparisons, and CSV/JSON exports.
+- Negative-feedback rules, evidence record IDs, persistent alert feed, and acknowledgement.
+- Entra access tokens, signed-token verification, tenant isolation, atomic quotas, per-minute request limits, private storage and managed identities.
+- Terraform with remote state, OIDC deployment, retention, Application Insights, error alarms, and resource-group budgets.
+
+## Architecture
+
+```mermaid
+flowchart TD
+  Client[Entra client] --> API[HTTP Function]
+  API --> Language[Azure AI Language]
+  API --> Cosmos[Cosmos DB]
+  API --> Blob[Private Blob Storage]
+  API --> Queue[Storage Queue]
+  Queue --> Worker[Queue Function]
+  Worker --> Language
+  Worker --> Cosmos
+  Worker --> Blob
+  Recovery[Recovery timer] --> Queue
+```
+
+Functions v4 / Node.js 24 on Flex Consumption. Cosmos partitions by a hash of the verified directory and object ID. Job creation and quota reservation commit in one transaction. Worker checkpoints publish immutable blob pointers and alerts in one transaction; expired workers cannot overwrite a newer result.
+
+## Quick start
+
+```bash
+npm ci
+npm run lint
+npm test
+npm run build
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
+terraform -chdir=terraform test
+```
+
+Local tests require no Azure subscription. Cloud deployment requires the Entra registration, state backend, and identity assignments in [DEPLOYMENT.md](docs/DEPLOYMENT.md). The deployment workflow runs only on explicit dispatch and creates billable Azure resources.
+
+After deployment, use an identity granted `Sentiment.User` or delegated `Sentiment.Access`:
+
+```bash
+az login
+export API_ENDPOINT=https://YOUR_FUNCTION.azurewebsites.net/api
+export ENTRA_AUDIENCE=YOUR_API_CLIENT_GUID
+npm run client -- analyze 'The screen is excellent but delivery was late.' --targeted
+npm run client -- submit examples/feedback.csv --key feedback-2026-09 --targeted
+npm run client -- status JOB_ID
+npm run client -- results JOB_ID --sentiment NEGATIVE
+npm run client -- report JOB_ID --product widget
+npm run client -- export JOB_ID --format csv --out results.csv
+npm run client -- history
+npm run client -- compare CURRENT_JOB_ID BASELINE_JOB_ID
+npm run client -- rule examples/alert-rule.json
+npm run client -- alerts
+npm run client -- usage
+```
+
+Reuse the printed idempotency key when retrying an upload. The same key plus the same data reuses one job and one allowance reservation; changed data returns `409`. Single requests do not retain feedback history. Submit a one-record job for retained reports and alerts.
+
+## Differences from the AWS service
+
+Azure opinion mining and Comprehend targeted sentiment use different models and evidence structures; predictions are not expected to match. Azure emits three confidence scores even when the label is `MIXED`, so this service does not manufacture a fourth. Source offsets explicitly use JavaScript UTF-16 units. The existing `zh-TW` input code maps to Azure `zh-hant`.
+
+Additional safeguards include per-minute request limits, transactional alert publication, immutable result candidates, persisted recovery pagination, and cryptographic JWT validation independent of caller-supplied platform headers. See the full [parity matrix](docs/PARITY.md).
+
+## Documentation
+
+- [API](docs/API.md) / [OpenAPI](openapi.yaml)
+- [Deployment](docs/DEPLOYMENT.md) and [Entra/OIDC](docs/IDENTITY.md)
+- [Operations](docs/OPERATIONS.md), [Security](docs/SECURITY.md), and [Costs](docs/COSTS.md)
+- [Integration](docs/INTEGRATION.md) and [validation checklist](docs/VALIDATION.md)
+- [Architecture decisions](docs/ARCHITECTURE.md) and [roadmap](docs/ROADMAP.md)
+
+Live Azure deployment, model responses, identity propagation, alert delivery, and recovery injection require subscription verification; local tests use substitutes for cloud services. MIT licensed; source attribution is preserved in [NOTICE](NOTICE).

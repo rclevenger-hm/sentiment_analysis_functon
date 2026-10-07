@@ -32,7 +32,10 @@ jobs:
           git checkout imported-history
           git config user.name 'Roger Clevenger'
           git config user.email '70983614+rclevenger-hm@users.noreply.github.com'
-          git merge --allow-unrelated-histories -s ours -m 'Import Azure sentiment service history' origin/main
+          git merge --allow-unrelated-histories -s ours --no-commit origin/main
+          git restore --source=origin/main -- .github/workflows/import-history.yml .github/import/history.bundle.b64
+          git add .github/workflows/import-history.yml .github/import/history.bundle.b64
+          git commit -m 'Import Azure sentiment service history'
       - uses: actions/setup-node@v4
         with:
           node-version: '24'

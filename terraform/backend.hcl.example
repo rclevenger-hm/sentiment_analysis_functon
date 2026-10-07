@@ -1,0 +1,5 @@
+resource_group_name  = "terraform-state"
+storage_account_name = "YOUR_UNIQUE_STATE_STORAGE"
+container_name       = "tfstate"
+key                  = "sentiment/dev.tfstate"
+use_azuread_auth     = true
