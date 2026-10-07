@@ -1,0 +1,56 @@
+name: Import and validate Azure service
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/import/**'
+      - '.github/workflows/import-history.yml'
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: import-service-history
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ARM_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000003
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify and import complete local history
+        run: |
+          base64 --decode .github/import/history.bundle.b64 > "$RUNNER_TEMP/history.bundle"
+          echo "9b8b202c44ebfa999d5271607feb5467a1b7532dca5964dae869d09d4df84bed  $RUNNER_TEMP/history.bundle" | sha256sum --check
+          git bundle verify "$RUNNER_TEMP/history.bundle"
+          git fetch "$RUNNER_TEMP/history.bundle" main:refs/heads/imported-history
+          test "$(git rev-parse imported-history)" = dca3eb174bd3832c11bad63f6e047cfe240f79d5
+          test "$(git rev-parse imported-history^{tree})" = 22cd7ba6d7c7f207aeae280e91bf133dfedfe0de
+          git checkout imported-history
+          git config user.name 'Roger Clevenger'
+          git config user.email '70983614+rclevenger-hm@users.noreply.github.com'
+          git merge --allow-unrelated-histories -s ours -m 'Import Azure sentiment service history' origin/main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint && npm test && npm run build
+      - run: npm audit --omit=dev --audit-level=high
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.5
+      - run: terraform -chdir=terraform fmt -check -recursive
+      - run: terraform -chdir=terraform init -backend=false -input=false -lockfile=readonly
+      - run: terraform -chdir=terraform validate
+      - run: terraform -chdir=terraform test
+      - name: Publish validated history without force
+        run: git push origin HEAD:main
+      - name: Run ordinary CI on the published default branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({owner: context.repo.owner, repo: context.repo.repo, workflow_id: 'ci.yml', ref: 'main'});
