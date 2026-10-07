@@ -41,7 +41,7 @@ jobs:
           cache: npm
       - run: npm ci && npm run lint && npm test && npm run build
       - run: npm ci --omit=dev --prefix artifacts
-      - uses: azure/login@v2
+      - uses: azure/login@v3
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
