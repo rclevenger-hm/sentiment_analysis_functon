@@ -34,7 +34,7 @@ jobs:
       TF_VAR_monthly_budget: ${{ vars.MONTHLY_BUDGET || '100' }}
       TF_IN_AUTOMATION: 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
