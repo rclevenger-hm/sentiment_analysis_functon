@@ -1,8 +1,12 @@
 terraform {
   required_version = ">= 1.9, < 2.0"
   backend "azurerm" {}
+  # Keep version attributes on separate lines so Dependabot can update them.
   required_providers {
-    azurerm = { source = "hashicorp/azurerm", version = "~> 4.50" }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.50"
+    }
   }
 }
 provider "azurerm" {
