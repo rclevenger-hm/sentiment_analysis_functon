@@ -20,12 +20,12 @@ resource "azurerm_storage_container" "deployment" {
   container_access_type = "private"
 }
 resource "azurerm_storage_queue" "jobs" {
-  name                 = "sentiment-jobs"
-  storage_account_name = azurerm_storage_account.data.name
+  name               = "sentiment-jobs"
+  storage_account_id = azurerm_storage_account.data.id
 }
 resource "azurerm_storage_queue" "poison" {
-  name                 = "sentiment-jobs-poison"
-  storage_account_name = azurerm_storage_account.data.name
+  name               = "sentiment-jobs-poison"
+  storage_account_id = azurerm_storage_account.data.id
 }
 resource "azurerm_storage_management_policy" "retention" {
   storage_account_id = azurerm_storage_account.data.id
