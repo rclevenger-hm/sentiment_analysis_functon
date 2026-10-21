@@ -18,8 +18,16 @@ run "secure_defaults" {
     error_message = "Storage must disable keys and public blobs."
   }
   assert {
-    condition     = azurerm_cosmosdb_account.data.local_authentication_disabled && azurerm_cognitive_account.language.local_auth_enabled == false
+    condition     = !azurerm_cosmosdb_account.data.local_authentication_enabled && !azurerm_cognitive_account.language.local_auth_enabled
     error_message = "Cosmos and Language must use Entra identities."
+  }
+  assert {
+    condition     = azurerm_storage_queue.jobs.name == "sentiment-jobs" && azurerm_storage_queue.poison.name == "sentiment-jobs-poison"
+    error_message = "Work and poison queue names must match the existing worker bindings."
+  }
+  assert {
+    condition     = azurerm_function_app_flex_consumption.api.app_settings["WorkQueue__credential"] == "managedidentity" && azurerm_role_assignment.storage["Storage Queue Data Contributor"].role_definition_name == "Storage Queue Data Contributor"
+    error_message = "Queue processing must retain managed-identity authentication and its data role."
   }
   assert {
     condition     = azurerm_cosmosdb_sql_container.items.partition_key_paths == tolist(["/tenantId"])
