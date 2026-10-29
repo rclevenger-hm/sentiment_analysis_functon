@@ -4,7 +4,7 @@
 
 `npm run lint`, `npm test`, `npm run build`, and `npm audit --omit=dev --audit-level=high` run locally or in CI. Terraform uses a checked-in provider lock and mocked-provider tests. CI runs formatting, initialization, validation, and Terraform tests without a live deployment. The production artifact includes locked runtime dependencies.
 
-Infrastructure CI covers the committed provider lock (currently AzureRM 4.81.0) and an explicit 5.10.0 compatibility lane. Only the latter writes a temporary Terraform override and resolves a separate lock in its disposable checkout. This protects the existing deployment path while catching schema removals in the pending major upgrade. The application checks run once. Reassess the compatibility lane when the deployed major version changes; the lane is not a deployment approval or a live-state migration test.
+Infrastructure CI covers the committed provider lock (currently AzureRM 5.11.0) and an explicit 4.81.0 legacy compatibility lane. Only the latter writes a temporary Terraform override and resolves a separate lock in its disposable checkout. Both lanes exercise the secure-default and quota plans, retaining a tested pre-upgrade configuration while validating the new major version. The application checks run once. The legacy lane is not proof that v5-written state can be downgraded, a deployment approval, or a live-state migration test.
 
 Behavioral coverage includes malformed/null input, UTF-8 and CSV bounds, JWT signatures/issuer/audience/expiry, role/scope checks, tenant isolation, report/export semantics, duplicate keys, atomic quota contention, per-minute limits, lease expiry/replacement, terminal retries, bounded Azure batches, poison-message safeguards and recovery pagination.
 
