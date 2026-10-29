@@ -35,8 +35,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Keep the deployed lock authoritative while exercising the v5 migration.
-        azurerm: [locked, '5.10.0']
+        # Keep the current lock authoritative and retain the pre-upgrade migration lane.
+        azurerm: [locked, '4.81.0']
     env:
       ARM_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000003
     defaults:
