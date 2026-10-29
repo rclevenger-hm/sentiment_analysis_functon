@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci && npm run lint && npm test && npm run build
+      - run: npm ci && npm run lint && npm test && npm audit --omit=dev --audit-level=high && npm run build
       - run: npm ci --omit=dev --prefix artifacts
       - uses: azure/login@v3
         with:

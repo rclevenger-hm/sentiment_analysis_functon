@@ -28,5 +28,10 @@
     "acorn": "8.19.0",
     "esbuild": "0.28.2",
     "yaml": "2.9.1"
+  },
+  "overrides": {
+    "@azure/identity": {
+      "@azure/msal-node": "7.1.2"
+    }
   }
 }
