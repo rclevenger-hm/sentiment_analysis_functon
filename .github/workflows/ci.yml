@@ -32,6 +32,11 @@ jobs:
   infrastructure:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keep the deployed lock authoritative while exercising the v5 migration.
+        azurerm: [locked, '5.10.0']
     env:
       ARM_SUBSCRIPTION_ID: 00000000-0000-0000-0000-000000000003
     defaults:
@@ -43,6 +48,25 @@ jobs:
         with:
           terraform_version: 1.13.5
       - run: terraform fmt -check -recursive
-      - run: terraform init -backend=false -input=false -lockfile=readonly
+      - name: Initialize locked provider
+        if: matrix.azurerm == 'locked'
+        run: terraform init -backend=false -input=false -lockfile=readonly
+      - name: Initialize compatibility provider
+        if: matrix.azurerm != 'locked'
+        env:
+          AZURERM_VERSION: ${{ matrix.azurerm }}
+        run: |
+          # An override changes only this disposable CI checkout, never the deployment lock.
+          cat > provider-compat_override.tf <<EOF
+          terraform {
+            required_providers {
+              azurerm = {
+                source  = "hashicorp/azurerm"
+                version = "= ${AZURERM_VERSION}"
+              }
+            }
+          }
+          EOF
+          terraform init -backend=false -input=false -upgrade
       - run: terraform validate
       - run: terraform test
