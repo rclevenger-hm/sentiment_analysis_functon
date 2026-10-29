@@ -26,3 +26,11 @@ Before marking a deployment production-ready:
 - Redeploy a prior artifact and verify rollback without replacing data.
 
 `npm run smoke` covers a subset and is intentionally not run without a configured Azure endpoint/identity. It creates retained sample data and invokes a billable model. No live Azure subscription was assumed during repository creation.
+
+## Temporary MSAL security pin
+
+`@azure/identity` 4.14.0 still declares MSAL Node `^6.0.0`. A narrowly scoped npm override pins only its `@azure/msal-node` dependency to 7.1.2 because [GHSA-xcx6-jx8p-x3h5](https://github.com/advisories/GHSA-xcx6-jx8p-x3h5) affects the authorization-code flow before 7.1.0. No vulnerable version is ignored by the audit gate. Microsoft has [merged the same major-version transition](https://github.com/Azure/azure-sdk-for-js/pull/40532) without Identity authentication implementation changes; its release is not yet available.
+
+Remove this override when a stable Identity release itself requires a patched MSAL Node version (at least 7.1.0), regenerate the lockfile, and rerun these credential tests, audit, build, and production-artifact installation. Reassess the pin before any further Identity upgrade; it is not a permanent substitute for updating the SDK.
+
+The added compatibility tests exercise the installed `DefaultAzureCredential` and MSAL implementations with a strict mock HTTP transport: client-secret and user-assigned App Service managed-identity token success, cache reuse, and failure propagation. Each scenario runs in its own process because MSAL retains managed-identity source configuration globally. Tests use the production credential chain for managed identity, preserving HTTP-option forwarding, and synthetic fixture credentials only. They do not contact Azure or establish live tenant, native-broker, browser sign-in, or resource-permission acceptance. Existing JOSE signature and caller-isolation tests remain in place. The build copies the manifest and lock, including the scoped override, into the production artifact.
